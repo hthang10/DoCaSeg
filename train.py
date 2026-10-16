@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument("--checkpoint-dir", type=str, default="checkpoints", help="Directory to save model checkpoints")
     parser.add_argument("--output-dir", type=str, default="outputs/predictions", help="Directory to save prediction plots")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
+    parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint (.pth) to resume training from")
     parser.add_argument("--no-vis", action="store_true", help="Disable visual prediction display during training")
     return parser.parse_args()
 
@@ -67,8 +68,25 @@ def main():
     valid_losses = []
 
     best_loss = float("inf")
-    best_model_wts = copy.deepcopy(model.state_dict())
     best_model_path = os.path.join(args.checkpoint_dir, "best_model.pth")
+
+    if args.resume:
+        if os.path.isfile(args.resume):
+            print(f"Resuming training from checkpoint: {args.resume}")
+            checkpoint_wts = torch.load(args.resume, map_location=device)
+            model.load_state_dict(checkpoint_wts)
+            current_val_loss = evaluate(
+                model=model,
+                data_loader=valid_loader,
+                criterion=criterion,
+                device=device,
+            )
+            best_loss = current_val_loss
+            print(f"Loaded checkpoint baseline validation loss: {best_loss:.4f}")
+        else:
+            print(f"Warning: Checkpoint '{args.resume}' not found. Training from scratch.")
+
+    best_model_wts = copy.deepcopy(model.state_dict())
 
     max_epoch = args.epochs
 

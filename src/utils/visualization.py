@@ -1,3 +1,6 @@
+import matplotlib
+# Use headless backend to prevent Tkinter GUI thread conflicts with PyTorch DataLoader
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -29,8 +32,8 @@ def de_normalize(
     return result
 
 
-def show_image(img, title=None, save_path=None, show=True):
-    """Displays or saves a single de-normalized image."""
+def show_image(img, title=None, save_path=None):
+    """Saves or renders a single de-normalized image."""
     fig = plt.figure()
     plt.imshow(de_normalize(img))
     if title:
@@ -38,25 +41,20 @@ def show_image(img, title=None, save_path=None, show=True):
     plt.axis("off")
     if save_path:
         plt.savefig(save_path, bbox_inches="tight")
-    if show:
-        try:
-            plt.show(block=False)
-            plt.pause(0.5)
-        except Exception:
-            plt.show()
     plt.close(fig)
 
 
-def display_prediction(model, image, target, device, save_path=None, show=True):
+def display_prediction(model, image, target, device, save_path=None, show=False):
     """
-    Displays the input image, ground truth mask, and predicted mask side by side.
+    Renders the input image, ground truth mask, and predicted mask side by side.
+    Saves to save_path safely without Tkinter thread conflicts.
     Args:
         model: PyTorch segmentation model (e.g. UNet)
         image: Tensor of shape (C, H, W)
         target: Tensor or ndarray of shape (H, W)
         device: torch.device
         save_path: Optional path to save the plot figure
-        show: Whether to display the plot interactively (non-blocking)
+        show: Kept for API compatibility (uses headless Agg backend)
     """
     model.eval()
     with torch.inference_mode():
@@ -90,10 +88,4 @@ def display_prediction(model, image, target, device, save_path=None, show=True):
     plt.tight_layout()
     if save_path:
         plt.savefig(save_path, bbox_inches="tight")
-    if show:
-        try:
-            plt.show(block=False)
-            plt.pause(0.5)
-        except Exception:
-            plt.show()
     plt.close(fig)

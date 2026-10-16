@@ -43,15 +43,29 @@ DoCaSeg/
 
 ## ⚙️ Cài đặt môi trường
 
-Kích hoạt môi trường conda đã có sẵn:
+### 1. Kích hoạt môi trường Conda
 ```bash
 conda activate basic_ml_cpu
 ```
 
-Hoặc cài đặt các thư viện cần thiết từ `requirements.txt`:
+### 2. Cài đặt PyTorch với hỗ trợ GPU (CUDA 12.4)
+Dự án được tối ưu hóa để huấn luyện trên GPU NVIDIA (RTX 40-series hoặc các GPU hỗ trợ CUDA 12.4):
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+```
+*(Nếu máy không có GPU rời, có thể bỏ qua bước này hoặc cài bản CPU qua `pip install torch torchvision`)*.
+
+### 3. Cài đặt các thư viện phụ trợ
 ```bash
 pip install -r requirements.txt
 ```
+
+### 4. Kiểm tra nhận diện GPU
+Xác nhận PyTorch đã nhận diện GPU thành công:
+```bash
+python -c "import torch; print('CUDA Available:', torch.cuda.is_available()); print('Device Name:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU')"
+```
+*(Đầu ra mong đợi: `CUDA Available: True` kèm tên card GPU của bạn)*.
 
 ---
 
@@ -62,9 +76,14 @@ Chạy script huấn luyện với các tham số mặc định (20 epochs, batc
 ```bash
 python train.py
 ```
-Tùy chỉnh tham số khi chạy:
+Tùy chỉnh tham số khi chạy (ví dụ 25 epochs):
 ```bash
-python train.py --epochs 25 --batch-size 32 --lr 0.001 --data-root data/pets_data
+python train.py --epochs 25 --batch-size 32 --lr 0.001
+```
+
+Huấn luyện tiếp tục (Resume) từ checkpoint đã lưu:
+```bash
+python train.py --resume checkpoints/best_model.pth --epochs 20 --lr 0.0005
 ```
 Trọng số tốt nhất dựa trên validation loss sẽ được tự động lưu tại `checkpoints/best_model.pth`.
 
