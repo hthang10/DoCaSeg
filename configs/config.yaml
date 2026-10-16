@@ -1,0 +1,22 @@
+# DoCaSeg Configuration
+
+model:
+  name: "UNet"
+  in_channels: 3
+  num_classes: 3
+
+data:
+  dataset: "OxfordIIITPet"
+  root: "data/pets_data"
+  img_size: [128, 128]
+  batch_size: 32
+  val_split: 0.2
+  num_workers: 2
+
+training:
+  epochs: 20
+  lr: 0.001
+  seed: 42
+  checkpoint_dir: "checkpoints"
+  output_dir: "outputs/predictions"
+

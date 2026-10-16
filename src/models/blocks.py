@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
 
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
@@ -47,5 +49,14 @@ class Decoder(nn.Module):
 
     def forward(self, x1, x2):
         x1 = self.conv_trans(x1)
+        # Fix padding if spatial dimensions of x1 and x2 differ
+        diff_y = x2.size(2) - x1.size(2)
+        diff_x = x2.size(3) - x1.size(3)
+        if diff_y != 0 or diff_x != 0:
+            x1 = F.pad(
+                x1,
+                [diff_x // 2, diff_x - diff_x // 2,
+                 diff_y // 2, diff_y - diff_y // 2]
+            )
         x = torch.cat([x2, x1], dim=1)
         return self.conv_block(x)
